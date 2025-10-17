@@ -21,6 +21,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		name = "Guest"
 	}
 	log.Printf("Received request for %s\n", name)
+	log.Printf(" %v\n", r)
 	w.Write([]byte(fmt.Sprintf("Hello, %s\n", name)))
 }
 

@@ -11,7 +11,7 @@ $ ./go-docker
 ```
 
 ```bash
-$ curl http://localhost:8080?name=Rajeev
+$ curl http://localhost:8080?name=Gianluca
 Hello, Rajeev
 ```
 
