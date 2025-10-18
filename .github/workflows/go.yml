@@ -34,7 +34,7 @@ jobs:
         with:
           action: deploy-app
           sevalla-token: ${{ secrets.SEVALLA_TOKEN }}
-          app-id: go-docker
+          app-id: 'f215db77-fb16-4860-bbc1-2b021c8045a2'
           branch: master
           is-restart: true
           wait-for-finish: true
