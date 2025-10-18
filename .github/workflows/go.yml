@@ -26,3 +26,15 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: sevalla-hosting/sevalla-deploy@v1.0.0
+        with:
+          action: deploy-app
+          sevalla-token: ${{ secrets.SEVALLA_TOKEN }}
+          app-id: go-docker
+          branch: master
+          is-restart: false
+          wait-for-finish: true
