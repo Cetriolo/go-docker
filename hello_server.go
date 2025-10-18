@@ -34,7 +34,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", handler)
-
+	registerExtraRoutes(r)
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         ":8080",
