@@ -36,5 +36,5 @@ jobs:
           sevalla-token: ${{ secrets.SEVALLA_TOKEN }}
           app-id: go-docker
           branch: master
-          is-restart: false
+          is-restart: true
           wait-for-finish: true
