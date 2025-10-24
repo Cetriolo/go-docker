@@ -10,13 +10,18 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
+
+// Redis client
+var rdb *redis.Client
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
@@ -30,18 +35,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Create Server and Route Handlers
-	r := mux.NewRouter()
-
-	r.HandleFunc("/", handler)
-	registerExtraRoutes(r)
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         ":8080",
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-
 	// Configure Logging
 	LOG_FILE_LOCATION := os.Getenv("LOG_FILE_LOCATION")
 	if LOG_FILE_LOCATION != "" {
@@ -52,6 +45,22 @@ func main() {
 			MaxAge:     28,   //days
 			Compress:   true, // disabled by default
 		})
+	}
+
+	// Initialize Redis
+	initRedis()
+	seedRedisData(context.Background())
+
+	// Create Server and Route Handlers
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", handler)
+	registerExtraRoutes(r)
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         ":8080",
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	// Start Server
@@ -88,7 +97,80 @@ func registerExtraRoutes(r *mux.Router) {
 	r.HandleFunc("/headers", headersHandler)
 	r.HandleFunc("/ip", clientIPHandler)
 	r.HandleFunc("/echo", echoHandler).Methods("GET", "POST")
+	r.HandleFunc("/redis", redisHandler).Methods("GET") // New Redis route
 }
+
+// --- New Redis Functions ---
+
+func initRedis() {
+	// Configuration from environment variables
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		addr = "redis://:wR8+dE8_kV5_hX5=zL8-@test-db-e2kuf-redis-master.test-db-e2kuf.svc.cluster.local:6379" // default
+	}
+	//password := os.Getenv("REDIS_PASSWORD") // no password by default
+	password := "wR8+dE8_kV5_hX5=zL8-" // no password by default
+	dbStr := os.Getenv("REDIS_DB")
+	if dbStr == "" {
+		dbStr = "0" // default db
+	}
+	db, err := strconv.Atoi(dbStr)
+	if err != nil {
+		log.Fatalf("Invalid Redis DB number: %v", err)
+	}
+
+	rdb = redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: password,
+		DB:       db,
+	})
+
+	// Ping to check connection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, err := rdb.Ping(ctx).Result(); err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
+	log.Println("Connected to Redis successfully.")
+}
+
+// seedRedisData adds some predetermined data to Redis.
+func seedRedisData(ctx context.Context) {
+	log.Println("Seeding Redis with initial data...")
+	err := rdb.Set(ctx, "app:name", "go-hello-server", 0).Err()
+	if err != nil {
+		log.Printf("Failed to seed data 'app:name': %v", err)
+	}
+	err = rdb.Set(ctx, "user:1:name", "Cetriolo", 0).Err()
+	if err != nil {
+		log.Printf("Failed to seed data 'user:1:name': %v", err)
+	}
+}
+
+// redisHandler retrieves a value from Redis by key.
+// Example: /redis?key=app:name
+func redisHandler(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("key")
+	if key == "" {
+		http.Error(w, "Query parameter 'key' is required", http.StatusBadRequest)
+		return
+	}
+
+	val, err := rdb.Get(r.Context(), key).Result()
+	if err == redis.Nil {
+		http.Error(w, fmt.Sprintf("Key '%s' not found", key), http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, "Failed to retrieve data from Redis", http.StatusInternalServerError)
+		log.Printf("Redis GET error for key '%s': %v", key, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprintln(w, val)
+}
+
+// --- Existing Handlers ---
 
 func getClientIP(r *http.Request) string {
 	// Check common proxy headers first
