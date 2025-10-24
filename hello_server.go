@@ -108,8 +108,7 @@ func initRedis() {
 	if addr == "" {
 		addr = "test-db-e2kuf-redis-master.test-db-e2kuf.svc.cluster.local:6379" // default
 	}
-	//password := os.Getenv("REDIS_PASSWORD") // no password by default
-	password := "wR8+dE8_kV5_hX5=zL8-" // no password by default
+	password := os.Getenv("REDIS_PASSWORD") // no password by default
 	dbStr := os.Getenv("REDIS_DB")
 	if dbStr == "" {
 		dbStr = "0" // default db
