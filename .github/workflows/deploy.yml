@@ -1,0 +1,79 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25.1'
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Permesso necessario per fare push su GHCR
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: Cetriolo
+          password: ${{ secrets.GITHUB_TOKEN }} # Token automatico di GitHub
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }} # Tagga l'immagine con l'hash del commit
+
+
+  deploy-to-sevalla:
+    needs: build-and-push # Questo job parte solo dopo che 'build-and-push' è completato
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Sevalla
+        uses: sevalla-hosting/sevalla-deploy@v1
+        with:
+          action: 'deploy-app' # Specifica l'azione di deploy
+
+          # ⬇️ USA QUESTI INPUT PER IL DEPLOY DA IMMAGINE ⬇️
+
+          # L'immagine che hai appena caricato
+          docker-image: 'ghcr.io/${{ github.repository }}:${{ github.sha }}'
+
+          # L'ID della tua applicazione su Sevalla
+          app-id: 'f215db77-fb16-4860-bbc1-2b021c8045a2'
+
+          # Il tuo token API di Sevalla
+          sevalla-token: ${{ secrets.SEVALLA_TOKEN }}
+
+          # ⬆️ USA QUESTI INPUT PER IL DEPLOY DA IMMAGINE ⬆️
+
+          # Opzionale: attende che il deploy sia completato prima di finire il job
+          wait-for-finish: true
