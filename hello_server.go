@@ -108,7 +108,7 @@ func initRedis() {
 	if addr == "" {
 		addr = "test-db-e2kuf-redis-master.test-db-e2kuf.svc.cluster.local:6379" // default
 	}
-	password := os.Getenv("REDIS_PASSWORD") // no password by default
+	//password := os.Getenv("REDIS_PASSWORD") // no password by default
 	dbStr := os.Getenv("REDIS_DB")
 	if dbStr == "" {
 		dbStr = "0" // default db
@@ -119,8 +119,8 @@ func initRedis() {
 	}
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
+		Addr:     "test-g6r4t-redis-master.test-g6r4t.svc.cluster.local",
+		Password: "cE0+mF2_sV3_cQ3+vT0-",
 		DB:       db,
 	})
 
