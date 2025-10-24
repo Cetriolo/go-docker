@@ -44,17 +44,13 @@ jobs:
           username: Cetriolo
           password: ${{ secrets.GITHUB_TOKEN }} # Token automatico di GitHub
 
-      - name: Convert repository name to lowercase
-          id: string
-          run: |
-            echo "repo_lowercase=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }} # Tagga l'immagine con l'hash del commit
+          tags: ghcr.io/${{ toLowerCase(github.repository) }}:${{ github.sha }}
 
 
   deploy-to-sevalla:
