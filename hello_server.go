@@ -119,7 +119,7 @@ func initRedis() {
 	}
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "test-g6r4t-redis-master.test-g6r4t.svc.cluster.local",
+		Addr:     "test-g6r4t-redis-master.test-g6r4t.svc.cluster.local:6379",
 		Password: "cE0+mF2_sV3_cQ3+vT0-",
 		DB:       db,
 	})
