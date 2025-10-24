@@ -8,7 +8,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -107,10 +106,10 @@ func initRedis() {
 	// Configuration from environment variables
 	addr := os.Getenv("REDIS_ADDR")
 	if addr == "" {
-		addr = url.QueryEscape("redis://:wR8+dE8_kV5_hX5=zL8-@test-db-e2kuf-redis-master.test-db-e2kuf.svc.cluster.local:6379") // default
+		addr = "test-db-e2kuf-redis-master.test-db-e2kuf.svc.cluster.local:6379" // default
 	}
 	//password := os.Getenv("REDIS_PASSWORD") // no password by default
-	password := url.QueryEscape("wR8+dE8_kV5_hX5=zL8-") // no password by default
+	password := "wR8+dE8_kV5_hX5=zL8-" // no password by default
 	dbStr := os.Getenv("REDIS_DB")
 	if dbStr == "" {
 		dbStr = "0" // default db
