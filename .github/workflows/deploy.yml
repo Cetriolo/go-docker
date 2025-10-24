@@ -70,7 +70,7 @@ jobs:
           docker-image: 'ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}'
 
           # L'ID della tua applicazione su Sevalla
-          app-id: 'f215db77-fb16-4860-bbc1-2b021c8045a2'
+          app-id: '02ed3d2d-a54d-4ae8-8cc0-9b9970df7757'
 
           # Il tuo token API di Sevalla
           sevalla-token: ${{ secrets.SEVALLA_TOKEN }}
