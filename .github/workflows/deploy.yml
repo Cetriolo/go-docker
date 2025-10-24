@@ -1,7 +1,4 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
+name: Deploy
 
 on:
   push:
@@ -50,8 +47,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ toLowerCase(github.repository) }}:${{ github.sha }}
-
+          tags: ghcr.io/${{ toLower(github.repository) }}:${{ github.sha }}
 
   deploy-to-sevalla:
     needs: build-and-push # Questo job parte solo dopo che 'build-and-push' è completato
@@ -66,7 +62,7 @@ jobs:
           # ⬇️ USA QUESTI INPUT PER IL DEPLOY DA IMMAGINE ⬇️
 
           # L'immagine che hai appena caricato
-          docker-image: 'ghcr.io/${{ github.repository }}:${{ github.sha }}'
+          docker-image: 'ghcr.io/${{ toLower(github.repository) }}:${{ github.sha }}'
 
           # L'ID della tua applicazione su Sevalla
           app-id: 'f215db77-fb16-4860-bbc1-2b021c8045a2'
