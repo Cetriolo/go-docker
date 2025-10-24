@@ -41,13 +41,15 @@ jobs:
           username: Cetriolo
           password: ${{ secrets.GITHUB_TOKEN }} # Token automatico di GitHub
 
+      - name: Lowercase repository for image tag
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ toLower(github.repository) }}:${{ github.sha }}
+          tags: ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}
 
   deploy-to-sevalla:
     needs: build-and-push # Questo job parte solo dopo che 'build-and-push' è completato
@@ -62,7 +64,7 @@ jobs:
           # ⬇️ USA QUESTI INPUT PER IL DEPLOY DA IMMAGINE ⬇️
 
           # L'immagine che hai appena caricato
-          docker-image: 'ghcr.io/${{ toLower(github.repository) }}:${{ github.sha }}'
+          docker-image: 'ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}'
 
           # L'ID della tua applicazione su Sevalla
           app-id: 'f215db77-fb16-4860-bbc1-2b021c8045a2'
